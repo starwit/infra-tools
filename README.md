@@ -19,3 +19,8 @@ Run this on a Linux machine if you want to use `wakeonlan`.
   `systemctl --user enable wol-http-trigger.service`
 - Make systemd user services run without session\
   `loginctl enable-linger`
+
+## Update
+- Change devices list in script
+- Restart service\
+  `systemctl --user restart wol-http-trigger.service`
