@@ -39,7 +39,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
             try:
-                result = subprocess.run(['./wakeonlan', WOL_DEVICES[dev_id][1]], capture_output=True, text=True)
+                result = subprocess.run(['wakeonlan', WOL_DEVICES[dev_id][1]], capture_output=True, text=True)
                 output = result.stdout
                 self.log_message(f'Successfully sent WOL trigger to {WOL_DEVICES[dev_id][0]} ({WOL_DEVICES[dev_id][1]})')
                 self.wfile.write(f'System program executed successfully. Output: {output}'.encode('utf-8'))
