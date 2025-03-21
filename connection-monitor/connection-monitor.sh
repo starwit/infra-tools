@@ -19,6 +19,30 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Function to handle cleanup and exit
+cleanup() {
+    local exit_code=$?
+    local signal=$1
+    
+    console_log "$YELLOW" "Received signal $signal. Stopping connection monitor..."
+    
+    # Kill any background processes that might be hanging
+    jobs -p | xargs -r kill -9 2>/dev/null
+    
+    # Final log message
+    if [[ -n "$GENERAL_LOG" && -f "$GENERAL_LOG" ]]; then
+        log_message "$GENERAL_LOG" "monitor_stopped"
+    fi
+    
+    console_log "$BLUE" "Connection monitor stopped"
+    exit $exit_code
+}
+
+# Set up signal traps for graceful termination
+trap 'cleanup SIGINT' INT
+trap 'cleanup SIGTERM' TERM
+trap 'cleanup SIGHUP' HUP
+
 # Function to display help
 show_help() {
     echo "Usage: $0 [OPTIONS]"
@@ -275,6 +299,7 @@ update_connection_status() {
 start_monitoring() {
     console_log "$BLUE" "Starting connection monitoring"
     console_log "$BLUE" "Check interval: $CHECK_INTERVAL seconds"
+    console_log "$BLUE" "Press Ctrl+C to stop monitoring"
     
     # Display targets for each method
     for method in "${!TARGETS[@]}"; do
@@ -287,7 +312,10 @@ start_monitoring() {
     
     while true; do
         run_checks
-        sleep "$CHECK_INTERVAL"
+        # Use smaller sleep intervals with a counter to allow faster script termination
+        for ((i=0; i<CHECK_INTERVAL; i++)); do
+            sleep 1
+        done
     done
 }
 
